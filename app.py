@@ -135,6 +135,6 @@ def serve_file(req_id, filename):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5050))
+    port = int(os.environ.get('PORT', 7860))
     app.run(debug=os.environ.get('FLASK_DEBUG', 'true').lower() == 'true',
             host='0.0.0.0', port=port)
