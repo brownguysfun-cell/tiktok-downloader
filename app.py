@@ -4,9 +4,11 @@ import shutil
 import tempfile
 import uuid
 from flask import Flask, render_template, request, send_file, jsonify, abort
+from flask_cors import CORS
 import yt_dlp
 
 app = Flask(__name__)
+CORS(app)
 
 
 def cleanup_old_folders():
@@ -58,9 +60,6 @@ def download():
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         for i, url in enumerate(urls):
-            if 'tiktok.com' not in url and 'vm.tiktok.com' not in url:
-                failed.append({'url': url, 'reason': 'INVALID_URL'})
-                continue
 
             try:
                 info = ydl.extract_info(url, download=True)
@@ -90,7 +89,7 @@ def download():
                 results.append({
                     'download_url': f'/file/{req_id}/{video_file}',
                     'filename': video_file,
-                    'title': info.get('title', 'TikTok Video') or 'TikTok Video',
+                    'title': info.get('title', 'Video') or 'Video',
                     'author': info.get('uploader', info.get('creator', '')) or '',
                     'thumbnail': info.get('thumbnail', '') or '',
                     'quality': quality,
