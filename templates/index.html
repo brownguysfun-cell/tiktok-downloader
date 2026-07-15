@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Download TikTok videos in HD/4K without watermark. Bulk download multiple videos at once.">
+    <title>TikTok Downloader — HD / 4K No Watermark</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0f;color:#fff;min-height:100vh;min-height:-webkit-fill-available}
+
+        /* Hero */
+        .hero{width:100%;padding:2.2rem 1.5rem 1rem;text-align:center;background:linear-gradient(180deg,rgba(255,0,80,.08) 0%,transparent 100%)}
+        .hero h1{font-size:1.6rem;font-weight:900;letter-spacing:-.5px}
+        .hero h1 span{background:linear-gradient(90deg,#ff0050,#00f2ea);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero p{color:#666;font-size:.82rem;margin-top:.4rem}
+
+        /* Lang selector */
+        .lang-bar{display:flex;justify-content:center;padding:.6rem 1rem 0;gap:.3rem;flex-wrap:wrap}
+        .lang-btn{background:transparent;border:1px solid #222;color:#555;font-size:.68rem;padding:.3rem .55rem;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+        .lang-btn:hover{border-color:#444;color:#aaa}
+        .lang-btn.active{background:rgba(255,0,80,.12);border-color:#ff0050;color:#ff0050;font-weight:600}
+
+        /* Main */
+        .main{max-width:560px;margin:0 auto;padding:0 1.5rem 3rem}
+
+        /* Input */
+        .input-box{margin-top:1.2rem}
+        .input-box label{display:block;font-size:.78rem;color:#666;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+        textarea{width:100%;height:130px;background:#14141e;border:2px solid #222233;border-radius:14px;padding:1rem;color:#fff;font-family:'Inter',sans-serif;font-size:.88rem;line-height:1.6;resize:vertical;transition:border-color .3s}
+        textarea:focus{outline:none;border-color:#ff0050}
+        textarea::placeholder{color:#444}
+        .url-count{text-align:right;font-size:.72rem;color:#444;margin-top:.4rem;transition:color .2s}
+        .url-count.active{color:#00f2ea}
+
+        /* Buttons */
+        .actions{display:flex;gap:.6rem;margin-top:1rem}
+        .btn{flex:1;padding:.9rem;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:transform .15s,opacity .15s}
+        .btn:active:not(:disabled){transform:scale(.97)}
+        .btn:disabled{opacity:.35;cursor:not-allowed}
+        .btn-primary{background:linear-gradient(135deg,#ff0050,#e6004a);color:#fff;flex:3}
+        .btn-secondary{background:#1e1e2e;color:#aaa;flex:1;font-size:1.1rem}
+
+        /* Loader */
+        .loader-wrap{margin-top:1.5rem;display:none;text-align:center}
+        .loader-wrap p{color:#666;font-size:.82rem;margin-bottom:.6rem}
+        .loader-wrap p b{color:#00f2ea}
+        .loader-bar{height:3px;background:#1a1a24;border-radius:3px;overflow:hidden}
+        .loader-bar::after{content:'';display:block;height:100%;width:35%;background:linear-gradient(90deg,#ff0050,#00f2ea);border-radius:3px;animation:slide 1.2s infinite ease-in-out}
+        @keyframes slide{0%{transform:translateX(-110%)}100%{transform:translateX(350%)}}
+
+        /* Messages */
+        .msg{padding:.9rem 1rem;border-radius:12px;margin-top:1rem;font-size:.82rem;line-height:1.5;display:none}
+        .msg-error{color:#ff6b6b;background:rgba(255,60,60,.08);border:1px solid rgba(255,60,60,.2)}
+        .msg-warn{color:#ffaa00;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2)}
+
+        /* Results */
+        .results{margin-top:1.5rem;display:none}
+        .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+        .results-header h2{font-size:.95rem;font-weight:700}
+        .results-header .count{font-size:.75rem;padding:.25rem .7rem;border-radius:20px;background:rgba(0,200,83,.12);color:#00c853;font-weight:600}
+
+        .video-card{background:#13131b;border:1px solid #1e1e2e;border-radius:14px;overflow:hidden;margin-bottom:.8rem;display:flex;align-items:stretch}
+        .video-card .thumb{width:90px;min-height:90px;object-fit:cover;background:#1a1a24;flex-shrink:0}
+        .video-card .info{flex:1;padding:.8rem 1rem;display:flex;flex-direction:column;justify-content:center;gap:.3rem;min-width:0}
+        .video-card .info .title{font-size:.82rem;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .video-card .info .meta{font-size:.7rem;color:#555;display:flex;gap:.6rem;flex-wrap:wrap}
+        .badge-quality{font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:4px;background:rgba(0,242,234,.12);color:#00f2ea;letter-spacing:.3px}
+        .video-card .dl-btn{display:flex;align-items:center;justify-content:center;width:56px;background:rgba(0,200,83,.1);border:none;cursor:pointer;flex-shrink:0;transition:background .2s;text-decoration:none;font-size:1.3rem}
+        .video-card .dl-btn:active{background:rgba(0,200,83,.25)}
+
+        /* Tip */
+        .tip{margin-top:1.5rem;padding:1rem;border-radius:12px;background:rgba(0,242,234,.04);border:1px solid rgba(0,242,234,.1);font-size:.75rem;color:#556;line-height:1.6;text-align:center}
+        .tip strong{color:#888}
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1><span>TikTok</span> Downloader</h1>
+        <p data-i18n="subtitle">HD / 4K videos without watermark — bulk download</p>
+    </div>
+
+    <div class="lang-bar" id="lang-bar"></div>
+
+    <div class="main">
+        <div class="input-box">
+            <label data-i18n="label_urls">TikTok links (one per line)</label>
+            <textarea id="urls" data-i18n-placeholder="placeholder_urls"></textarea>
+            <div class="url-count" id="url-count"><span id="url-num">0</span> <span data-i18n="links">link(s)</span></div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="btn-dl" data-i18n="btn_download">Download all</button>
+            <button class="btn btn-secondary" id="btn-paste" title="Paste">📋</button>
+        </div>
+
+        <div class="loader-wrap" id="loader">
+            <p data-i18n="loader_text">Extracting videos…</p>
+            <div class="loader-bar"></div>
+        </div>
+
+        <div class="msg msg-error" id="error"></div>
+        <div class="msg msg-warn" id="warn"></div>
+
+        <div class="results" id="results">
+            <div class="results-header">
+                <h2 data-i18n="results_title">Videos ready</h2>
+                <span class="count" id="results-count"></span>
+            </div>
+            <div id="video-list"></div>
+        </div>
+
+        <div class="tip" id="tip"></div>
+    </div>
+
+<script>
+/* ────────────────────────────────────────────────
+   i18n – 11 languages
+   ──────────────────────────────────────────────── */
+const LANGS = {
+    en: {
+        name: 'English',
+        subtitle: 'HD / 4K videos without watermark — bulk download',
+        label_urls: 'TikTok links (one per line)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'link(s)',
+        btn_download: 'Download all',
+        btn_processing: 'Processing…',
+        loader_text: 'Extracting videos…',
+        results_title: 'Videos ready',
+        videos_count: 'video(s)',
+        tip: '📲 <strong>On iPhone:</strong> tap ⬇ to download to <strong>Files</strong>, then open the video → share ↗ → <strong>Save Video</strong>.',
+        warn_failed: '⚠ Failed links:',
+        err_NO_URLS: 'Please paste at least one TikTok link.',
+        err_NO_VIDEOS: 'No video could be downloaded.',
+        err_INVALID_URL: 'Invalid TikTok link',
+        err_DOWNLOAD_FAILED: 'Download failed',
+        err_FILE_NOT_FOUND: 'File not found after download',
+        err_unknown: 'An unknown error occurred.',
+    },
+    fr: {
+        name: 'Français',
+        subtitle: 'Vidéos HD / 4K sans filigrane — téléchargement en masse',
+        label_urls: 'Liens TikTok (un par ligne)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'lien(s)',
+        btn_download: 'Télécharger tout',
+        btn_processing: 'Traitement…',
+        loader_text: 'Extraction des vidéos en cours…',
+        results_title: 'Vidéos prêtes',
+        videos_count: 'vidéo(s)',
+        tip: '📲 <strong>Sur iPhone :</strong> appuyez sur ⬇ pour télécharger dans <strong>Fichiers</strong>, puis ouvrez la vidéo → partage ↗ → <strong>Enregistrer la vidéo</strong>.',
+        warn_failed: '⚠ Liens en échec :',
+        err_NO_URLS: 'Veuillez coller au moins un lien TikTok.',
+        err_NO_VIDEOS: 'Aucune vidéo n\'a pu être téléchargée.',
+        err_INVALID_URL: 'Lien TikTok invalide',
+        err_DOWNLOAD_FAILED: 'Échec du téléchargement',
+        err_FILE_NOT_FOUND: 'Fichier introuvable après téléchargement',
+        err_unknown: 'Une erreur inconnue est survenue.',
+    },
+    zh: {
+        name: '中文',
+        subtitle: '高清/4K无水印视频 — 批量下载',
+        label_urls: 'TikTok 链接（每行一个）',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: '个链接',
+        btn_download: '全部下载',
+        btn_processing: '处理中…',
+        loader_text: '正在提取视频…',
+        results_title: '视频已就绪',
+        videos_count: '个视频',
+        tip: '📲 <strong>iPhone用户：</strong>点击 ⬇ 下载到<strong>文件</strong>应用，然后打开视频 → 分享 ↗ → <strong>存储视频</strong>。',
+        warn_failed: '⚠ 失败的链接：',
+        err_NO_URLS: '请粘贴至少一个TikTok链接。',
+        err_NO_VIDEOS: '没有视频可以下载。',
+        err_INVALID_URL: '无效的TikTok链接',
+        err_DOWNLOAD_FAILED: '下载失败',
+        err_FILE_NOT_FOUND: '下载后未找到文件',
+        err_unknown: '发生未知错误。',
+    },
+    hi: {
+        name: 'हिन्दी',
+        subtitle: 'HD / 4K वीडियो बिना वॉटरमार्क — बल्क डाउनलोड',
+        label_urls: 'TikTok लिंक (प्रति पंक्ति एक)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'लिंक',
+        btn_download: 'सभी डाउनलोड करें',
+        btn_processing: 'प्रोसेसिंग…',
+        loader_text: 'वीडियो निकाले जा रहे हैं…',
+        results_title: 'वीडियो तैयार हैं',
+        videos_count: 'वीडियो',
+        tip: '📲 <strong>iPhone पर:</strong> ⬇ टैप करें <strong>फ़ाइल्स</strong> में डाउनलोड करने के लिए, फिर वीडियो खोलें → शेयर ↗ → <strong>वीडियो सेव करें</strong>।',
+        warn_failed: '⚠ विफल लिंक:',
+        err_NO_URLS: 'कृपया कम से कम एक TikTok लिंक पेस्ट करें।',
+        err_NO_VIDEOS: 'कोई वीडियो डाउनलोड नहीं हो सका।',
+        err_INVALID_URL: 'अमान्य TikTok लिंक',
+        err_DOWNLOAD_FAILED: 'डाउनलोड विफल',
+        err_FILE_NOT_FOUND: 'डाउनलोड के बाद फ़ाइल नहीं मिली',
+        err_unknown: 'एक अज्ञात त्रुटि हुई।',
+    },
+    es: {
+        name: 'Español',
+        subtitle: 'Vídeos HD / 4K sin marca de agua — descarga masiva',
+        label_urls: 'Enlaces TikTok (uno por línea)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'enlace(s)',
+        btn_download: 'Descargar todo',
+        btn_processing: 'Procesando…',
+        loader_text: 'Extrayendo vídeos…',
+        results_title: 'Vídeos listos',
+        videos_count: 'vídeo(s)',
+        tip: '📲 <strong>En iPhone:</strong> toca ⬇ para descargar en <strong>Archivos</strong>, luego abre el vídeo → compartir ↗ → <strong>Guardar vídeo</strong>.',
+        warn_failed: '⚠ Enlaces fallidos:',
+        err_NO_URLS: 'Por favor, pega al menos un enlace de TikTok.',
+        err_NO_VIDEOS: 'No se pudo descargar ningún vídeo.',
+        err_INVALID_URL: 'Enlace TikTok no válido',
+        err_DOWNLOAD_FAILED: 'Descarga fallida',
+        err_FILE_NOT_FOUND: 'Archivo no encontrado después de la descarga',
+        err_unknown: 'Ocurrió un error desconocido.',
+    },
+    ar: {
+        name: 'العربية',
+        subtitle: 'فيديوهات HD / 4K بدون علامة مائية — تحميل جماعي',
+        label_urls: 'روابط TikTok (رابط واحد في كل سطر)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'رابط',
+        btn_download: 'تحميل الكل',
+        btn_processing: 'جارٍ المعالجة…',
+        loader_text: 'جارٍ استخراج الفيديوهات…',
+        results_title: 'الفيديوهات جاهزة',
+        videos_count: 'فيديو',
+        tip: '📲 <strong>على iPhone:</strong> اضغط ⬇ للتحميل في <strong>الملفات</strong>، ثم افتح الفيديو → مشاركة ↗ → <strong>حفظ الفيديو</strong>.',
+        warn_failed: '⚠ روابط فاشلة:',
+        err_NO_URLS: 'الرجاء لصق رابط TikTok واحد على الأقل.',
+        err_NO_VIDEOS: 'لم يتم تحميل أي فيديو.',
+        err_INVALID_URL: 'رابط TikTok غير صالح',
+        err_DOWNLOAD_FAILED: 'فشل التحميل',
+        err_FILE_NOT_FOUND: 'الملف غير موجود بعد التحميل',
+        err_unknown: 'حدث خطأ غير معروف.',
+    },
+    bn: {
+        name: 'বাংলা',
+        subtitle: 'HD / 4K ভিডিও ওয়াটারমার্ক ছাড়া — বাল্ক ডাউনলোড',
+        label_urls: 'TikTok লিংক (প্রতি লাইনে একটি)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'লিংক',
+        btn_download: 'সব ডাউনলোড করুন',
+        btn_processing: 'প্রক্রিয়াকরণ…',
+        loader_text: 'ভিডিও এক্সট্র্যাক্ট হচ্ছে…',
+        results_title: 'ভিডিও প্রস্তুত',
+        videos_count: 'ভিডিও',
+        tip: '📲 <strong>iPhone-এ:</strong> ⬇ ট্যাপ করুন <strong>Files</strong>-এ ডাউনলোড করতে, তারপর ভিডিওটি খুলুন → শেয়ার ↗ → <strong>ভিডিও সেভ করুন</strong>।',
+        warn_failed: '⚠ ব্যর্থ লিংক:',
+        err_NO_URLS: 'অনুগ্রহ করে কমপক্ষে একটি TikTok লিংক পেস্ট করুন।',
+        err_NO_VIDEOS: 'কোনো ভিডিও ডাউনলোড করা যায়নি।',
+        err_INVALID_URL: 'অবৈধ TikTok লিংক',
+        err_DOWNLOAD_FAILED: 'ডাউনলোড ব্যর্থ',
+        err_FILE_NOT_FOUND: 'ডাউনলোডের পর ফাইল পাওয়া যায়নি',
+        err_unknown: 'একটি অজানা ত্রুটি ঘটেছে।',
+    },
+    pt: {
+        name: 'Português',
+        subtitle: 'Vídeos HD / 4K sem marca d\'água — download em massa',
+        label_urls: 'Links TikTok (um por linha)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'link(s)',
+        btn_download: 'Baixar tudo',
+        btn_processing: 'Processando…',
+        loader_text: 'Extraindo vídeos…',
+        results_title: 'Vídeos prontos',
+        videos_count: 'vídeo(s)',
+        tip: '📲 <strong>No iPhone:</strong> toque em ⬇ para baixar em <strong>Arquivos</strong>, depois abra o vídeo → compartilhar ↗ → <strong>Salvar vídeo</strong>.',
+        warn_failed: '⚠ Links com falha:',
+        err_NO_URLS: 'Por favor, cole pelo menos um link do TikTok.',
+        err_NO_VIDEOS: 'Nenhum vídeo pôde ser baixado.',
+        err_INVALID_URL: 'Link TikTok inválido',
+        err_DOWNLOAD_FAILED: 'Falha no download',
+        err_FILE_NOT_FOUND: 'Arquivo não encontrado após o download',
+        err_unknown: 'Ocorreu um erro desconhecido.',
+    },
+    ru: {
+        name: 'Русский',
+        subtitle: 'Видео HD / 4K без водяного знака — массовое скачивание',
+        label_urls: 'Ссылки TikTok (по одной на строку)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'ссылок',
+        btn_download: 'Скачать все',
+        btn_processing: 'Обработка…',
+        loader_text: 'Извлечение видео…',
+        results_title: 'Видео готовы',
+        videos_count: 'видео',
+        tip: '📲 <strong>На iPhone:</strong> нажмите ⬇ для загрузки в <strong>Файлы</strong>, затем откройте видео → поделиться ↗ → <strong>Сохранить видео</strong>.',
+        warn_failed: '⚠ Неудачные ссылки:',
+        err_NO_URLS: 'Пожалуйста, вставьте хотя бы одну ссылку TikTok.',
+        err_NO_VIDEOS: 'Не удалось скачать ни одного видео.',
+        err_INVALID_URL: 'Недействительная ссылка TikTok',
+        err_DOWNLOAD_FAILED: 'Ошибка загрузки',
+        err_FILE_NOT_FOUND: 'Файл не найден после загрузки',
+        err_unknown: 'Произошла неизвестная ошибка.',
+    },
+    ja: {
+        name: '日本語',
+        subtitle: 'HD / 4K動画をウォーターマークなしで一括ダウンロード',
+        label_urls: 'TikTokリンク（1行に1つ）',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'リンク',
+        btn_download: 'すべてダウンロード',
+        btn_processing: '処理中…',
+        loader_text: '動画を抽出中…',
+        results_title: '動画の準備完了',
+        videos_count: '本の動画',
+        tip: '📲 <strong>iPhoneの場合：</strong> ⬇ をタップして<strong>ファイル</strong>にダウンロード、動画を開く → 共有 ↗ → <strong>ビデオを保存</strong>。',
+        warn_failed: '⚠ 失敗したリンク：',
+        err_NO_URLS: 'TikTokリンクを1つ以上貼り付けてください。',
+        err_NO_VIDEOS: '動画をダウンロードできませんでした。',
+        err_INVALID_URL: '無効なTikTokリンク',
+        err_DOWNLOAD_FAILED: 'ダウンロード失敗',
+        err_FILE_NOT_FOUND: 'ダウンロード後にファイルが見つかりません',
+        err_unknown: '不明なエラーが発生しました。',
+    },
+    ta: {
+        name: 'தமிழ்',
+        subtitle: 'HD / 4K வீடியோக்கள் வாட்டர்மார்க் இல்லாமல் — மொத்தமாக பதிவிறக்கம்',
+        label_urls: 'TikTok இணைப்புகள் (ஒரு வரியில் ஒன்று)',
+        placeholder_urls: 'https://vm.tiktok.com/ZNRogns5F/\nhttps://www.tiktok.com/@user/video/123456...',
+        links: 'இணைப்பு(கள்)',
+        btn_download: 'அனைத்தையும் பதிவிறக்கு',
+        btn_processing: 'செயலாக்கம்…',
+        loader_text: 'வீடியோக்கள் பிரித்தெடுக்கப்படுகின்றன…',
+        results_title: 'வீடியோக்கள் தயார்',
+        videos_count: 'வீடியோ(க்கள்)',
+        tip: '📲 <strong>iPhone-ல்:</strong> ⬇ தட்டு <strong>Files</strong>-ல் பதிவிறக்க, பின் வீடியோவைத் திறக்கவும் → பகிர் ↗ → <strong>வீடியோவைச் சேமி</strong>.',
+        warn_failed: '⚠ தோல்வியுற்ற இணைப்புகள்:',
+        err_NO_URLS: 'குறைந்தது ஒரு TikTok இணைப்பை ஒட்டவும்.',
+        err_NO_VIDEOS: 'எந்த வீடியோவையும் பதிவிறக்க இயலவில்லை.',
+        err_INVALID_URL: 'தவறான TikTok இணைப்பு',
+        err_DOWNLOAD_FAILED: 'பதிவிறக்கம் தோல்வி',
+        err_FILE_NOT_FOUND: 'பதிவிறக்கத்திற்குப் பிறகு கோப்பு கிடைக்கவில்லை',
+        err_unknown: 'தெரியாத பிழை ஏற்பட்டது.',
+    },
+};
+
+let currentLang = localStorage.getItem('lang') || 'en';
+
+function t(key) {
+    return (LANGS[currentLang] && LANGS[currentLang][key]) || LANGS.en[key] || key;
+}
+
+function applyLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+
+    // Update all data-i18n elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.innerHTML = t(el.dataset.i18n);
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+
+    // Update tip
+    document.getElementById('tip').innerHTML = t('tip');
+
+    // Update active button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+
+    // RTL for Arabic
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+}
+
+// Build language bar
+const langBar = document.getElementById('lang-bar');
+Object.keys(LANGS).forEach(code => {
+    const btn = document.createElement('button');
+    btn.className = 'lang-btn';
+    btn.dataset.lang = code;
+    btn.textContent = LANGS[code].name;
+    btn.addEventListener('click', () => applyLang(code));
+    langBar.appendChild(btn);
+});
+
+// Apply saved or default language
+applyLang(currentLang);
+
+
+/* ────────────────────────────────────────────────
+   App logic
+   ──────────────────────────────────────────────── */
+const urlsEl    = document.getElementById('urls');
+const urlNumEl  = document.getElementById('url-num');
+const btnDl     = document.getElementById('btn-dl');
+const btnPaste  = document.getElementById('btn-paste');
+const loaderEl  = document.getElementById('loader');
+const errorEl   = document.getElementById('error');
+const warnEl    = document.getElementById('warn');
+const resultsEl = document.getElementById('results');
+const listEl    = document.getElementById('video-list');
+const countBadge= document.getElementById('results-count');
+
+function getUrls() {
+    return urlsEl.value.split('\n').map(u => u.trim()).filter(Boolean);
+}
+
+urlsEl.addEventListener('input', () => {
+    urlNumEl.textContent = getUrls().length;
+    document.getElementById('url-count').classList.toggle('active', getUrls().length > 0);
+});
+
+btnPaste.addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        urlsEl.value = text;
+        urlsEl.dispatchEvent(new Event('input'));
+    } catch {}
+});
+
+btnDl.addEventListener('click', async () => {
+    const urls = getUrls();
+    if (!urls.length) return;
+
+    btnDl.disabled = true;
+    btnDl.textContent = t('btn_processing');
+    loaderEl.style.display = 'block';
+    errorEl.style.display  = 'none';
+    warnEl.style.display   = 'none';
+    resultsEl.style.display = 'none';
+    listEl.innerHTML = '';
+
+    try {
+        const res = await fetch('/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls: urls.join('\n') })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(t('err_' + data.error) || t('err_unknown'));
+        }
+
+        if (data.failed && data.failed.length) {
+            warnEl.innerHTML = '<strong>' + t('warn_failed') + '</strong><br>' +
+                data.failed.map(f => '• ' + escapeHtml(f.url)).join('<br>');
+            warnEl.style.display = 'block';
+        }
+
+        if (data.videos && data.videos.length) {
+            countBadge.textContent = data.videos.length + ' ' + t('videos_count');
+
+            data.videos.forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    ${v.thumbnail
+                        ? `<img class="thumb" src="${v.thumbnail}" alt="">`
+                        : `<div class="thumb"></div>`}
+                    <div class="info">
+                        <div class="title">${escapeHtml(v.title)}</div>
+                        <div class="meta">
+                            ${v.author ? `<span>@${escapeHtml(v.author)}</span>` : ''}
+                            <span>${v.size}</span>
+                            <span class="badge-quality">${v.quality}</span>
+                        </div>
+                    </div>
+                    <a class="dl-btn" href="${v.download_url}" download="${v.filename}" title="Download">⬇</a>
+                `;
+                listEl.appendChild(card);
+            });
+
+            resultsEl.style.display = 'block';
+        }
+
+    } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+    } finally {
+        btnDl.disabled = false;
+        btnDl.textContent = t('btn_download');
+        loaderEl.style.display = 'none';
+    }
+});
+
+function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+</script>
+</body>
+</html>
